@@ -1,14 +1,11 @@
-import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { Annotation, messagesStateReducer } from "@langchain/langgraph";
 import z from "zod";
 
 export const STATE_ANNOTATION = Annotation.Root({
     resume: Annotation<string>(),
     script: Annotation<string>(),
-    messages: Annotation<Array<SystemMessage | HumanMessage | AIMessage>>({
-        reducer: messagesStateReducer,
-        default: () => []
-    }),
+    messages: Annotation<(HumanMessage|AIMessage|SystemMessage)[]>(),
     related_to_interview: Annotation<boolean>(),
     end_of_interview: Annotation<boolean>(),
     postInterview: Annotation<{

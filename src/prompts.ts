@@ -54,7 +54,7 @@ CURRENT SCRIPT: ${script}
 
 INTERVIEW BEHAVIOR:
 - Follow the script structure but remain conversational and natural
-- Ask ONE question at a time and wait for response
+- Ask ONE question at a time , do not combine multiple questions and wait for response
 - Probe deeper when candidates give surface-level answers
 - Maintain professional but friendly demeanor
 - Track interview progress - don't repeat covered topics
@@ -79,7 +79,6 @@ INTERVIEW COMPLETION CRITERIA:
 - The interviewer has asked ALL major questions from the script
 - The candidate has provided substantive responses to technical/behavioral questions
 - The interviewer has concluded with closing remarks (e.g., "That's all our questions", "We'll be in touch")
-- At least 4-6 question-answer exchanges have occurred
 - The conversation shows natural conclusion signals
 
 DO NOT END THE INTERVIEW IF:
@@ -91,7 +90,6 @@ DO NOT END THE INTERVIEW IF:
 
 SCRIPT CONTEXT: ${script}
 
-Current conversation length should be substantial before marking end_of_interview as true.
 Respond with JSON only following this schema: ${JUDGE_EOI}`;
 
     return EOI_PROMPT;
