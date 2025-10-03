@@ -1,0 +1,52 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String        @id     @default(uuid())
+  authid                  String        @unique
+  authProvider            String
+  firstName               String?
+  lastName                String?
+  email                   String?
+  phone                   String?
+  interviewCount          Int                   @default(0)
+  interview               Interview[] 
+  resume                  Resume[]
+
+  @@index([authid])
+  // @@index([id])
+  //id is already the primary key, which means it’s automatically indexed.
+  //You only need @@index if you want to query frequently by non-primary fields (e.g., username).
+}
+
+model Interview{
+  id                      String        @id     @default(uuid())
+  role                    String
+  score                   Int                   @default(0)
+  remarks                 String
+  question                String[]
+  answers                 String[]
+  userId                  String
+  user                    User                  @relation(fields: [userId] , references: [id])
+  createdAt               DateTime              @default(now())
+}
+
+model Resume{
+  id                      String        @id     @default(uuid())
+  userId                  String
+  content                 String
+  user                    User                  @relation(fields: [userId] , references: [id])
+}

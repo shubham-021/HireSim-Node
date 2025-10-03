@@ -1,5 +1,5 @@
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+import { ChatOpenAI } from "@langchain/openai"
 import "dotenv/config";
 import { STATE , JUDGE_RES, STATE_ANNOTATION, JUDGE_EOI } from "./types";
 import { resume } from "./resume";
@@ -9,10 +9,7 @@ import { MemorySaver } from "@langchain/langgraph";
 import { ask } from "./io";
 
 const checkpointer = new MemorySaver();
-const model = new ChatGoogleGenerativeAI({
-    model: "gemini-2.5-flash",
-    temperature: 0
-})
+const model = new ChatOpenAI({ model: "gpt-4o-mini" });
 
 function user_query_node(state:STATE){
     const value = interrupt("Waiting for user response:")
