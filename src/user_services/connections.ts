@@ -27,7 +27,6 @@ export class Connection{
 
     async startInterview(script:string){
         await this.entity.invoke_graph(
-            //a comment
             script,
             (llmMsg) => this.getUserInput(llmMsg),
         )
