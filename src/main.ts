@@ -81,11 +81,9 @@ let config = { configurable: { thread_id: "conversation-num-2"}};
 
 async function invoke_graph() {
   const invoke = async (input: any) => {
-    let last: any = null;
-    const res = await app.invoke(input,config);
-    console.log(res.messages[res.messages.length-1]);
-    last = res;
-    return last;
+    const res = await app.invoke(input,config) as any;
+    // console.log(res.messages[res.messages.length-1]);
+    return res;
   };
 
   let out = await invoke(initial_state);

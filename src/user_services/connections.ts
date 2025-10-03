@@ -1,6 +1,7 @@
 import WebSocket, { RawData } from "ws";
 import PeerConnection from "./rtc";
 import { def_script } from "../script";
+import { Entity } from "./entity";
 
 type Message = {
     type: string,
@@ -10,14 +11,34 @@ type Message = {
 export class Connection{
     private ws:WebSocket;
     private pc:PeerConnection;
+    private entity:Entity;
+    private script!:string;
+    private userInputResolver: ((input: string) => void) | null = null;
 
     constructor(ws:WebSocket){
         this.ws = ws;
         this.pc = new PeerConnection();
+        this.entity = new Entity();
 
         this.ws.on("message", (msg) => this.handleMessage(msg));
         this.ws.on("close", () => this.cleanup());
         this.ws.on("error", (err) => console.error("WS error:", err));
+    }
+
+    async startInterview(script:string){
+        await this.entity.invoke_graph(
+            script,
+            (llmMsg) => this.getUserInput(llmMsg),
+        )
+        // this.ws.send(JSON.stringify({ type: "end", data: "Interview finished" }));
+    }
+
+    getUserInput(llmResponse:string):Promise<string>{
+        this.ws.send(JSON.stringify({ type: "ai_message", data: llmResponse }));
+        return new Promise((resolve) => {
+            this.userInputResolver = resolve;
+        });
+
     }
 
     async handleMessage(msg:RawData){
@@ -34,7 +55,7 @@ export class Connection{
         switch (type) {
             case 'init':
                 try {
-                    const script = await def_script(data);
+                    this.script = await def_script(data);
                     this.ws.send(JSON.stringify({ type: "init", data: "success" }));
                 } catch {
                     this.ws.send(JSON.stringify({ type: "init", data: "error" }));
@@ -42,7 +63,15 @@ export class Connection{
                 break;
 
             case 'begin':
-                console.log(data);
+                // console.log(data);
+                this.startInterview(this.script);
+                break;
+            
+            case 'user_reply':
+                if(this.userInputResolver){
+                    this.userInputResolver(data);
+                    this.userInputResolver = null;
+                }
                 break;
 
             case 'offer':
