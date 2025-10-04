@@ -5,9 +5,13 @@ import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages
 import { END_OF_INTERVIEW } from "../types/end";
 import { DEF_EOI } from "../prompts/end";
 import { DEF_INTERVIEWER } from "../prompts/interview";
+import OpenAI from "openai";
+import PeerConnection from "./rtc";
+import { WebSocket } from "ws";
 
 export class Entity{
     private model = new ChatOpenAI({model: "gpt-4o-mini"});
+    private speech_model = new OpenAI();
     private checkpointer = new MemorySaver();
     private app: any;
     
@@ -69,4 +73,25 @@ export class Entity{
             )
         }
     }
+
+    async stream_audio(llmResponse:string , pc:PeerConnection , ws:WebSocket){
+        const stream = this.speech_model.chat.completions.stream({
+            model: "gpt-4o-mini-tts",
+            modalities: ["text","audio"],
+            audio:{voice: 'coral', format: 'opus'},
+            messages:[{role:'user' , content: llmResponse}]
+        });
+
+        for await(const event of stream as any){
+            if(event.type === "response.output_audio.delta"){
+                const opusPacket = Buffer.from(event.delta, "base64");
+                pc.pushOpus(opusPacket , Date.now() , 20);
+            }else if(event.type === "response.completed"){
+                ws.send(JSON.stringify({type:"user_turn"}));
+            }
+        }
+
+    }
+
+    
 }

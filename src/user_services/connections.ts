@@ -30,11 +30,12 @@ export class Connection{
             script,
             (llmMsg) => this.getUserInput(llmMsg),
         )
-        // this.ws.send(JSON.stringify({ type: "end", data: "Interview finished" }));
+        this.ws.send(JSON.stringify({ type: "end_of_interview" }));
     }
 
     getUserInput(llmResponse:string):Promise<string>{
-        this.ws.send(JSON.stringify({ type: "ai_message", data: llmResponse }));
+        this.entity.stream_audio(llmResponse , this.pc , this.ws)
+        // this.ws.send(JSON.stringify({ type: "ai_message", data: llmResponse }));
         return new Promise((resolve) => {
             this.userInputResolver = resolve;
         });
@@ -43,11 +44,12 @@ export class Connection{
 
     async handleMessage(msg:RawData){
         const str = msg.toString();
-        let message;
+        let message:Message;
         try{
             message = JSON.parse(str);
         }catch(error){
-            this.ws.send(JSON.stringify({type:"error",data:"Invalid JSON"}))
+            this.ws.send(JSON.stringify({type:"error",data:"Invalid JSON"}));
+            return;
         }
 
         const {type , data} = message;

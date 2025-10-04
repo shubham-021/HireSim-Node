@@ -1,5 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
-import { DEF_SCRIPT_PROMPT } from "./prompts";
+import { DEF_SCRIPT_PROMPT } from "./mine/prompts";
 import { SystemMessage } from "@langchain/core/messages";
 
 const model = new ChatOpenAI({model:"gpt-4o-mini"});
