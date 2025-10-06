@@ -1,4 +1,4 @@
-import { nonstandard, RTCPeerConnection , RTCSessionDescription } from "@roamhq/wrtc";
+import { nonstandard, RTCPeerConnection , RTCIceCandidate} from "@roamhq/wrtc";
 
 class PeerConnection{
     private pc:RTCPeerConnection;
@@ -12,21 +12,36 @@ class PeerConnection{
         this.pc.addTrack(this.audioTrack);
     }
 
-    set_offer(offer:RTCSessionDescription){
+    async set_icecandidate(candidate: RTCIceCandidate){
+        await this.pc.addIceCandidate(candidate);
+    }
+
+    set_offer(offer:RTCSessionDescriptionInit){
         this.pc.setRemoteDescription(offer);
     }
 
-    async create_answer() : Promise<RTCSessionDescriptionInit | null>{
-        const answer = await this.pc?.createAnswer();
+    async create_answer() : Promise<RTCSessionDescriptionInit>{
+        const answer = await this.pc.createAnswer();
         this.pc.setLocalDescription(answer);
-        return this.pc.localDescription;
+
+        if(!this.pc.localDescription){
+            throw new Error("Local description not set")
+        }
+
+        return this.pc.localDescription.toJSON();
     }
 
     pushOpus(opusPacket: Uint8Array, timestamp: number, duration: number) {
         const sender = this.pc.getSenders().find(s => s.track === this.audioTrack);
 
-        if (!sender || !("sendEncodedAudio" in sender)) {
-            throw new Error("sendEncodedAudio not supported in this build");
+        if (!sender) {
+            console.warn("No sender found for audio track");
+            return;
+        }
+
+        if (!("sendEncodedAudio" in sender)) {
+            console.warn("sendEncodedAudio not supported — build missing encoded transforms");
+            return;
         }
 
         (sender as any).sendEncodedAudio({
@@ -38,6 +53,11 @@ class PeerConnection{
 
     getConnection() {
         return this.pc;
+    }
+
+    close() {
+        this.audioTrack.stop();
+        this.pc.close();
     }
 }
 

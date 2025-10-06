@@ -23,6 +23,14 @@ export class Connection{
         this.ws.on("message", (msg) => this.handleMessage(msg));
         this.ws.on("close", () => this.cleanup());
         this.ws.on("error", (err) => console.error("WS error:", err));
+
+
+        const pcInstance = this.pc.getConnection();
+        pcInstance.onicecandidate = (event) => {
+            if(event.candidate){
+                this.ws.send(JSON.stringify({type:'IceCandidate' , data:event.candidate}));
+            }
+        }
     }
 
     async startInterview(script:string){
@@ -31,6 +39,7 @@ export class Connection{
             (llmMsg) => this.getUserInput(llmMsg),
         )
         this.ws.send(JSON.stringify({ type: "end_of_interview" }));
+        this.pc.close();
     }
 
     getUserInput(llmResponse:string):Promise<string>{
@@ -84,6 +93,14 @@ export class Connection{
                 } catch (err) {
                     console.error("Error handling offer:", err);
                     this.ws.send(JSON.stringify({ type: "error", data: "Failed to process offer" }));
+                }
+                break;
+
+            case 'IceCandidate':
+                try{
+                    this.pc.set_icecandidate(data);
+                }catch(err){
+                    console.log('Failed to add icecandidate: ',err);
                 }
                 break;
                 
