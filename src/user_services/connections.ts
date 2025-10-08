@@ -12,7 +12,7 @@ export class Connection{
     private ws:WebSocket;
     private pc:PeerConnection;
     private entity:Entity;
-    private script!:string;
+    private script:string|null = null;
     private userInputResolver: ((input: string) => void) | null = null;
 
     constructor(ws:WebSocket){
@@ -42,13 +42,17 @@ export class Connection{
         this.pc.close();
     }
 
-    getUserInput(llmResponse:string):Promise<string>{
-        this.entity.stream_audio(llmResponse , this.pc , this.ws)
-        // this.ws.send(JSON.stringify({ type: "ai_message", data: llmResponse }));
+    async getUserInput(llmResponse:string):Promise<string>{
+        try {
+            await this.entity.stream_audio(llmResponse , this.pc , this.ws);
+            this.ws.send(JSON.stringify({type:"Unmute"}));
+        } catch(error) {
+            console.error('Audio streaming error:', error);
+        }
+        
         return new Promise((resolve) => {
             this.userInputResolver = resolve;
         });
-
     }
 
     async handleMessage(msg:RawData){
@@ -66,7 +70,9 @@ export class Connection{
         switch (type) {
             case 'init':
                 try {
+                    console.log("Received init");
                     this.script = await def_script(data);
+                    console.log(this.script);
                     this.ws.send(JSON.stringify({ type: "init", data: "success" }));
                 } catch {
                     this.ws.send(JSON.stringify({ type: "init", data: "error" }));
@@ -75,10 +81,21 @@ export class Connection{
 
             case 'begin':
                 // console.log(data);
-                this.startInterview(this.script);
+                console.log("got begin trigger");
+                if(!this.script) {
+                    this.ws.send(JSON.stringify({ type: "error", data: "Script not initialized" }));
+                    return;
+                }
+
+                try {
+                    await this.startInterview(this.script);
+                } catch(error) {
+                    console.error('Interview error:', error);
+                    this.ws.send(JSON.stringify({ type: "error", data: "Interview failed" }));
+                }
                 break;
             
-            case 'user_reply':
+            case 'user_response':
                 if(this.userInputResolver){
                     this.userInputResolver(data);
                     this.userInputResolver = null;

@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres
+    container_name: hireSim-db
+    environment:
+      POSTGRES_USER: sim_owner
+      POSTGRES_PASSWORD: 123456789
+      POSTGRES_DB: hiresimdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - hiresim-data:/var/lib/postgresql/data
+
+volumes:
+  hiresim-data:

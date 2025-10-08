@@ -22,11 +22,11 @@ export class Entity{
                     .addNode("user_input" , this.input)
                     .addEdge("__start__","take_interview")
                     .addConditionalEdges("take_interview",this.judge_end)
-                    .compile()
+                    .compile({checkpointer: this.checkpointer});
     }
 
 
-    private async start(state:STATE){
+    private start = async (state:STATE) => {
         const PROMPT = DEF_INTERVIEWER(state.script);
         const messages = [
             new SystemMessage(PROMPT),
@@ -38,12 +38,12 @@ export class Entity{
         return {messages: [...state.messages , new AIMessage(res.text)]}
     }
 
-    private input(state:STATE){
+    private input = (state:STATE) => {
         const res = interrupt("Response: ");
         return {messages: [...state.messages , new HumanMessage(res)]}
     }
 
-    private async judge_end(state:STATE){
+    private judge_end = async (state:STATE) => {
         const model_with_structured_output = this.model.withStructuredOutput(END_OF_INTERVIEW);
         const PROMPT = DEF_EOI(state.script);
         const messages = [
@@ -61,11 +61,17 @@ export class Entity{
             getUserInput: (aiMessage: string) => Promise<string> , 
             thread_id:string="default-threads"
         ){
+        console.log("invoke_graph");
+        console.log(script);
         const config = {configurable:{thread_id}};
         let result = await this.app.invoke({script,messages:[]},config);
 
+        console.log("RESULT: ",result);
+
         while(result.__interrupt__){
             const lastMessage = result.messages[result.messages.length-1];
+            console.log("LastMessage: ",lastMessage);
+            
             const userResponse = await getUserInput(lastMessage.text);
             result = await this.app.invoke(
                 new Command({resume:userResponse}),
@@ -75,22 +81,44 @@ export class Entity{
     }
 
     async stream_audio(llmResponse:string , pc:PeerConnection , ws:WebSocket){
-        const stream = this.speech_model.chat.completions.stream({
-            model: "gpt-4o-mini-tts",
-            modalities: ["text","audio"],
-            audio:{voice: 'coral', format: 'opus'},
-            messages:[{role:'user' , content: llmResponse}]
-        });
+        console.log("LLM: ",llmResponse);
+        try {
+            const response = await this.speech_model.audio.speech.create({
+                model: "gpt-4o-mini-tts",
+                voice: "nova",
+                input: llmResponse,
+                response_format: "pcm"
+            });
 
-        for await(const event of stream as any){
-            if(event.type === "response.output_audio.delta"){
-                const opusPacket = Buffer.from(event.delta, "base64");
-                pc.pushOpus(opusPacket , Date.now() , 20);
-            }else if(event.type === "response.completed"){
-                ws.send(JSON.stringify({type:"user_turn"}));
+            const buffer = Buffer.from(await response.arrayBuffer());
+            const samples = new Int16Array(buffer.buffer, buffer.byteOffset, buffer.length / 2);
+            console.log("Total samples:", samples.length);
+            console.log("Total bytes:", buffer.length);
+            
+            const chunkSize = 480;
+            let chunkCount = 0;
+
+            for(let i = 0; i < samples.length; i += chunkSize){
+                const end = Math.min(i + chunkSize, samples.length);
+                const chunkLength = end - i;
+                const chunk = new Int16Array(chunkSize);
+                
+                for(let j = 0; j < chunkLength; j++){
+                    chunk[j] = samples[i + j];
+                }
+
+                console.log(`Chunk ${chunkCount}: length=${chunk.length}, bytes=${chunk.byteLength}`);
+                pc.onData(chunk, 48000);
+                chunkCount++;
+
+                await new Promise(resolve => setTimeout(resolve, 10));
             }
-        }
 
+            ws.send(JSON.stringify({type:"user_turn"}));
+        } catch(error) {
+            console.error('TTS error:', error);
+            throw error;
+        }
     }
 
     

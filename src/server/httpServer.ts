@@ -4,7 +4,7 @@ import cors from 'cors';
 import multer from "multer";
 import PdfParse from "pdf-parse";
 import { requireAuth } from '@clerk/express';
-import { PrismaClient } from "../src/generated/prisma";
+import { PrismaClient } from "../../generated/prisma";
 import { verifyUser } from "../auth/helper";
 import { clerkClient } from '@clerk/express';
 
@@ -18,7 +18,16 @@ app.post("/api/upload/resume", requireAuth(), upload.single('file'), async (req,
         const user = await verifyUser(req);
         if (!user) return res.status(401).json({ error: "Unauthorized" });
 
+        // if(user.privateMetadata.dbUserId){
+        //     await clerkClient.users.updateUserMetadata(user.id, {
+        //         privateMetadata: {}
+        //     });
+        // }
+
+        // console.log(user.privateMetadata)
+
         if (!user.privateMetadata.dbUserId) {
+            console.log("here")
             const newUser = await db.user.create({
                 data: {
                     authid: user.id,
@@ -35,6 +44,8 @@ app.post("/api/upload/resume", requireAuth(), upload.single('file'), async (req,
                 privateMetadata: { dbUserId: newUser.id }
             });
         }
+
+        console.log(user.privateMetadata.dbUserId)
 
         const file = req.file;
         if (!file || file.mimetype !== "application/pdf") {

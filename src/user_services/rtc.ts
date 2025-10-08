@@ -16,13 +16,13 @@ class PeerConnection{
         await this.pc.addIceCandidate(candidate);
     }
 
-    set_offer(offer:RTCSessionDescriptionInit){
-        this.pc.setRemoteDescription(offer);
+    async set_offer(offer:RTCSessionDescriptionInit){
+        await this.pc.setRemoteDescription(offer);
     }
 
     async create_answer() : Promise<RTCSessionDescriptionInit>{
         const answer = await this.pc.createAnswer();
-        this.pc.setLocalDescription(answer);
+        await this.pc.setLocalDescription(answer);
 
         if(!this.pc.localDescription){
             throw new Error("Local description not set")
@@ -31,23 +31,33 @@ class PeerConnection{
         return this.pc.localDescription.toJSON();
     }
 
-    pushOpus(opusPacket: Uint8Array, timestamp: number, duration: number) {
-        const sender = this.pc.getSenders().find(s => s.track === this.audioTrack);
+    // pushOpus(opusPacket: Uint8Array, timestamp: number, duration: number) {
+    //     const sender = this.pc.getSenders().find(s => s.track === this.audioTrack);
 
-        if (!sender) {
-            console.warn("No sender found for audio track");
-            return;
-        }
+    //     if (!sender) {
+    //         console.warn("No sender found for audio track");
+    //         return;
+    //     }
 
-        if (!("sendEncodedAudio" in sender)) {
-            console.warn("sendEncodedAudio not supported — build missing encoded transforms");
-            return;
-        }
+    //     if (!("sendEncodedAudio" in sender)) {
+    //         console.warn("sendEncodedAudio not supported — build missing encoded transforms");
+    //         return;
+    //     }
 
-        (sender as any).sendEncodedAudio({
-            data: opusPacket,
-            timestamp,
-            duration,
+    //     (sender as any).sendEncodedAudio({
+    //         data: opusPacket,
+    //         timestamp,
+    //         duration,
+    //     });
+    // }
+
+    onData(samples: Int16Array, sampleRate: number = 48000) {
+        this.audioSource.onData({
+            samples: samples,
+            sampleRate: sampleRate,
+            bitsPerSample: 16,
+            channelCount: 1,
+            numberOfFrames: samples.length
         });
     }
 
