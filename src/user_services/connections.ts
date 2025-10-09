@@ -72,7 +72,7 @@ export class Connection{
                 try {
                     console.log("Received init");
                     this.script = await def_script(data);
-                    console.log(this.script);
+                    // console.log(this.script);
                     this.ws.send(JSON.stringify({ type: "init", data: "success" }));
                 } catch {
                     this.ws.send(JSON.stringify({ type: "init", data: "error" }));
@@ -88,6 +88,7 @@ export class Connection{
                 }
 
                 try {
+                    console.log(this.script);
                     await this.startInterview(this.script);
                 } catch(error) {
                     console.error('Interview error:', error);

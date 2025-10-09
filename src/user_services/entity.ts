@@ -38,8 +38,8 @@ export class Entity{
         return {messages: [...state.messages , new AIMessage(res.text)]}
     }
 
-    private input = (state:STATE) => {
-        const res = interrupt("Response: ");
+    private input = async (state:STATE) => {
+        const res = await interrupt("Response: ");
         return {messages: [...state.messages , new HumanMessage(res)]}
     }
 
@@ -52,6 +52,7 @@ export class Entity{
         ]
     
         const res = await model_with_structured_output.invoke(messages);
+        console.log("EOI Judge: ",res.end_of_interview);
     
         return (res.end_of_interview) ? "__end__" : "user_input";
     }
@@ -62,7 +63,7 @@ export class Entity{
             thread_id:string="default-threads"
         ){
         console.log("invoke_graph");
-        console.log(script);
+        // console.log(script);
         const config = {configurable:{thread_id}};
         let result = await this.app.invoke({script,messages:[]},config);
 
@@ -70,9 +71,11 @@ export class Entity{
 
         while(result.__interrupt__){
             const lastMessage = result.messages[result.messages.length-1];
-            console.log("LastMessage: ",lastMessage);
+            console.log("BOT: ",lastMessage);
             
             const userResponse = await getUserInput(lastMessage.text);
+            console.log("USER: ",userResponse);
+            console.log("Resuming thread:", thread_id, "Has checkpoint:", await this.checkpointer.list(config));
             result = await this.app.invoke(
                 new Command({resume:userResponse}),
                 config
@@ -94,8 +97,12 @@ export class Entity{
             const samples = new Int16Array(buffer.buffer, buffer.byteOffset, buffer.length / 2);
             console.log("Total samples:", samples.length);
             console.log("Total bytes:", buffer.length);
+
+            const durationSeconds = samples.length / 24000;  // Assume 24kHz
+            console.log(`Audio duration if 24kHz: ${durationSeconds.toFixed(2)}s`);
+            console.log(`Audio duration if 48kHz: ${(samples.length / 48000).toFixed(2)}s`);
             
-            const chunkSize = 480;
+            const chunkSize = 240;
             let chunkCount = 0;
 
             for(let i = 0; i < samples.length; i += chunkSize){
@@ -107,8 +114,8 @@ export class Entity{
                     chunk[j] = samples[i + j];
                 }
 
-                console.log(`Chunk ${chunkCount}: length=${chunk.length}, bytes=${chunk.byteLength}`);
-                pc.onData(chunk, 48000);
+                // console.log(`Chunk ${chunkCount}: length=${chunk.length}, bytes=${chunk.byteLength}`);
+                pc.onData(chunk, 24000);
                 chunkCount++;
 
                 await new Promise(resolve => setTimeout(resolve, 10));
