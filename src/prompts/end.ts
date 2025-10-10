@@ -8,6 +8,7 @@ INTERVIEW COMPLETION CRITERIA:
 - The candidate has provided substantive responses to technical/behavioral questions
 - The interviewer has concluded with closing remarks (e.g., "That's all our questions", "We'll be in touch")
 - The conversation shows natural conclusion signals
+- Candidate has asked to close the interview process due to some reason.
 
 DO NOT END THE INTERVIEW IF:
 - Only greetings/introductions have occurred

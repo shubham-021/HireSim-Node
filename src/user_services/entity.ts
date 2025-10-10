@@ -22,6 +22,7 @@ export class Entity{
                     .addNode("user_input" , this.input)
                     .addEdge("__start__","take_interview")
                     .addConditionalEdges("take_interview",this.judge_end)
+                    .addEdge("user_input","take_interview")
                     .compile({checkpointer: this.checkpointer});
     }
 
@@ -60,11 +61,13 @@ export class Entity{
     async invoke_graph(
             script:string , 
             getUserInput: (aiMessage: string) => Promise<string> , 
-            thread_id:string="default-threads"
+            thread_id:string="00001"
         ){
         console.log("invoke_graph");
         // console.log(script);
+        console.log("Ran once, entity line 67")
         const config = {configurable:{thread_id}};
+        console.log("Config: ",config);
         let result = await this.app.invoke({script,messages:[]},config);
 
         console.log("RESULT: ",result);
@@ -75,11 +78,12 @@ export class Entity{
             
             const userResponse = await getUserInput(lastMessage.text);
             console.log("USER: ",userResponse);
-            console.log("Resuming thread:", thread_id, "Has checkpoint:", await this.checkpointer.list(config));
+            console.log("Resuming thread:", thread_id, "Has checkpoint:", this.checkpointer.list(config));
             result = await this.app.invoke(
                 new Command({resume:userResponse}),
                 config
             )
+            console.log("after result: ",result);
         }
     }
 

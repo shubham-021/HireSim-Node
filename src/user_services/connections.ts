@@ -88,7 +88,7 @@ export class Connection{
                 }
 
                 try {
-                    console.log(this.script);
+                    // console.log(this.script);
                     await this.startInterview(this.script);
                 } catch(error) {
                     console.error('Interview error:', error);
