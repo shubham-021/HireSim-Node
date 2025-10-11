@@ -2,6 +2,7 @@ import WebSocket, { RawData } from "ws";
 import PeerConnection from "./rtc";
 import { def_script } from "../script";
 import { Entity } from "./entity";
+import db from "./db";
 
 type Message = {
     type: string,
@@ -14,6 +15,8 @@ export class Connection{
     private entity:Entity;
     private script:string|null = null;
     private userInputResolver: ((input: string) => void) | null = null;
+    private userId :string|null = null;
+    private role : string|null = null;
 
     constructor(ws:WebSocket){
         this.ws = ws;
@@ -34,12 +37,40 @@ export class Connection{
     }
 
     async startInterview(script:string){
-        await this.entity.invoke_graph(
+        const messages = await this.entity.invoke_graph(
             script,
             (llmMsg) => this.getUserInput(llmMsg),
         )
         this.ws.send(JSON.stringify({ type: "end_of_interview" }));
+        const {success , payload} = await this.storeResult(messages);
+        // this.ws.send(JSON.stringify({type: 'result' , data:result}));
+        const data = (success) ? {type:'complete' , data:payload} : {type:'error' , data:payload};
+        this.ws.send(JSON.stringify(data));
         this.pc.close();
+    }
+
+    private async storeResult(messages:any){
+        try {
+            const result = await this.entity.results(messages);
+            if(!this.userId || !this.role) throw new Error("No userId found.")
+            const res = await db.interview.create({
+                data:{
+                    userId : this.userId,
+                    role: this.role,
+                    responses:{
+                        create: result.map(r => ({
+                            question : r.question,
+                            answer: r.answer,
+                            score: r.score,
+                            remark: r.remark
+                        }))
+                    }
+                }
+            })
+            return {success: true , payload: res.id};
+        } catch (error) {
+            return {success: false , payload:"Storing result failed"};
+        }
     }
 
     async getUserInput(llmResponse:string):Promise<string>{
@@ -71,11 +102,18 @@ export class Connection{
             case 'init':
                 try {
                     console.log("Received init");
-                    this.script = await def_script(data);
+                    const {userId , resumeId , role} = data;
+                    this.userId = userId;
+                    this.role = role;
+
+                    const resume = await db.resume.findFirst({where:{id:resumeId}});
+                    if(!resume) throw new Error(`No resume found with id: ${resumeId}`);
+
+                    this.script = await def_script(resume.content,role);
                     // console.log(this.script);
                     this.ws.send(JSON.stringify({ type: "init", data: "success" }));
-                } catch {
-                    this.ws.send(JSON.stringify({ type: "init", data: "error" }));
+                } catch(err) {
+                    this.ws.send(JSON.stringify({ type: "init", data: err}));
                 }
                 break;
 

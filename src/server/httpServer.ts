@@ -4,13 +4,13 @@ import cors from 'cors';
 import multer from "multer";
 import PdfParse from "pdf-parse";
 import { requireAuth } from '@clerk/express';
-import { PrismaClient } from "../../generated/prisma";
 import { verifyUser } from "../auth/helper";
 import { clerkClient } from '@clerk/express';
+import db from '../user_services/db';
 
 const app = express();
 app.use(cors());
-const db = new PrismaClient();
+
 const upload = multer();
 
 app.post("/api/upload/resume", requireAuth(), upload.single('file'), async (req, res) => {

@@ -36,13 +36,20 @@ model User {
 model Interview{
   id                      String        @id     @default(uuid())
   role                    String
-  score                   Int                   @default(0)
-  remarks                 String
-  question                String[]
-  answers                 String[]
   userId                  String
+  responses               InterviewResposne[]
   user                    User                  @relation(fields: [userId] , references: [id])
   createdAt               DateTime              @default(now())
+}
+
+model InterviewResposne{
+  id                      String        @id     @default(uuid())
+  question                String
+  answer                  String
+  score                   Int
+  remark                  String
+  interviewId             String
+  interview               Interview             @relation(fields: [interviewId] , references: [id])
 }
 
 model Resume{

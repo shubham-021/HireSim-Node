@@ -8,9 +8,12 @@ import { DEF_INTERVIEWER } from "../prompts/interview";
 import OpenAI from "openai";
 import PeerConnection from "./rtc";
 import { WebSocket } from "ws";
+import review from "../types/review";
+import REVIEWPROMPT from "../prompts/review";
 
 export class Entity{
     private model = new ChatOpenAI({model: "gpt-4o-mini"});
+    private reviewer = new ChatOpenAI({model: "gpt-4o-mini"});
     private speech_model = new OpenAI();
     private checkpointer = new MemorySaver();
     private app: any;
@@ -85,6 +88,8 @@ export class Entity{
             )
             console.log("after result: ",result);
         }
+
+        return result.messages;
     }
 
     async stream_audio(llmResponse:string , pc:PeerConnection , ws:WebSocket){
@@ -130,6 +135,17 @@ export class Entity{
             console.error('TTS error:', error);
             throw error;
         }
+    }
+
+    async results(conversation:any){
+        const reviewer_withStructuredOutput = this.reviewer.withStructuredOutput(review);
+        const messages = [
+            new SystemMessage(REVIEWPROMPT),
+            new HumanMessage(conversation)
+        ]
+        const res = await reviewer_withStructuredOutput.invoke(messages);
+
+        return res;
     }
 
     
