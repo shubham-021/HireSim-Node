@@ -37,12 +37,13 @@ model Interview{
   id                      String        @id     @default(uuid())
   role                    String
   userId                  String
-  responses               InterviewResposne[]
+  score                   Int
+  responses               InterviewResponse[]
   user                    User                  @relation(fields: [userId] , references: [id])
   createdAt               DateTime              @default(now())
 }
 
-model InterviewResposne{
+model InterviewResponse{
   id                      String        @id     @default(uuid())
   question                String
   answer                  String

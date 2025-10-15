@@ -44,7 +44,7 @@ export class Connection{
         this.ws.send(JSON.stringify({ type: "end_of_interview" }));
         const {success , payload} = await this.storeResult(messages);
         // this.ws.send(JSON.stringify({type: 'result' , data:result}));
-        const data = (success) ? {type:'complete' , data:payload} : {type:'error' , data:payload};
+        const data = (success) ? {type:'complete' , data:payload} : {type:'interview_error' , data:payload};
         this.ws.send(JSON.stringify(data));
         this.pc.close();
     }
@@ -53,10 +53,12 @@ export class Connection{
         try {
             const result = await this.entity.results(messages);
             if(!this.userId || !this.role) throw new Error("No userId found.")
+            const score = Number((result.reduce((score , sec) => score + sec.score , 0) / result.length).toFixed(1));
             const res = await db.interview.create({
                 data:{
                     userId : this.userId,
                     role: this.role,
+                    score,
                     responses:{
                         create: result.map(r => ({
                             question : r.question,

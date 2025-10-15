@@ -88,4 +88,47 @@ app.get('/api/get/resume', requireAuth(), async (req, res) => {
     }
 });
 
+app.get('interview/result/:id' , requireAuth() , async (req,res)=>{
+    try {
+        const user = await verifyUser(req);
+        if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+        const id = req.params.id;
+
+        const data = await db.interview.findFirst({
+            where:{
+                id,
+                userId:user.id
+            }
+        })
+
+        res.sendStatus(200).json({response: data});
+    } catch (error) {
+        res.sendStatus(400);
+    }
+})
+
+app.get('interview/all' , requireAuth() , async (req,res)=>{
+    try{
+        const user = await verifyUser(req);
+        if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+        const data = await db.user.findFirst({
+            where:{id:user.id},
+            select:{
+                interview: true
+            }
+        })
+
+        if(!data){
+            res.sendStatus(400);
+            return;
+        }
+        
+        res.sendStatus(200).json({data});
+    }catch(error){
+
+    }
+})
+
 export default app;
