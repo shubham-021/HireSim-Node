@@ -99,6 +99,9 @@ app.get('interview/result/:id' , requireAuth() , async (req,res)=>{
             where:{
                 id,
                 userId:user.id
+            },
+            select:{
+                responses:true
             }
         })
 
@@ -120,14 +123,11 @@ app.get('interview/all' , requireAuth() , async (req,res)=>{
             }
         })
 
-        if(!data){
-            res.sendStatus(400);
-            return;
-        }
-        
+        if(!data) throw new Error("No data found");
+
         res.sendStatus(200).json({data});
     }catch(error){
-
+        res.sendStatus(400);
     }
 })
 
