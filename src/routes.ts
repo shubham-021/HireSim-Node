@@ -1,51 +1,20 @@
 import 'dotenv/config';
-import express from "express";
-import cors from 'cors';
 import multer from "multer";
 import PdfParse from "pdf-parse";
 import { requireAuth } from '@clerk/express';
-import { verifyUser } from "../auth/helper";
+import { verifyUser } from "./auth/helper";
 import { clerkClient } from '@clerk/express';
-import db from '../user_services/db';
-
-const app = express();
-app.use(cors());
+import storeUser from './auth/user';
+import db from './user_services/db';
+import app from "./app";
 
 const upload = multer();
 
-app.post("/api/upload/resume", requireAuth(), upload.single('file'), async (req, res) => {
+app.post("/api/create" , requireAuth() , storeUser);
+
+app.post("/api/upload/resume", requireAuth(), storeUser , upload.single('file'), async (req, res) => {
     try {
-        const user = await verifyUser(req);
-        if (!user) return res.status(401).json({ error: "Unauthorized" });
-
-        // if(user.privateMetadata.dbUserId){
-        //     await clerkClient.users.updateUserMetadata(user.id, {
-        //         privateMetadata: {}
-        //     });
-        // }
-
-        // console.log(user.privateMetadata)
-
-        if (!user.privateMetadata.dbUserId) {
-            console.log("here")
-            const newUser = await db.user.create({
-                data: {
-                    authid: user.id,
-                    authProvider: user.externalAccounts[0].provider,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
-                    email: user.emailAddresses[0]?.emailAddress,
-                    phone: user.externalAccounts[0]?.phoneNumber
-                },
-                select: { id: true }
-            });
-
-            await clerkClient.users.updateUserMetadata(user.id, {
-                privateMetadata: { dbUserId: newUser.id }
-            });
-        }
-
-        console.log(user.privateMetadata.dbUserId)
+        const authid = (req as any).authid;
 
         const file = req.file;
         if (!file || file.mimetype !== "application/pdf") {
@@ -55,10 +24,13 @@ app.post("/api/upload/resume", requireAuth(), upload.single('file'), async (req,
         const data = await PdfParse(file.buffer);
         const text = data.text;
 
-        const user_id = user.privateMetadata.dbUserId as string;
+        // const user_id = user.privateMetadata.dbUserId as string;
+        const user_id = await db.user.findFirst({where: {authid} , select:{id:true}});
+
+        if(!user_id) return res.status(401).json({error: "No user found"});
 
         const id = await db.resume.create({
-            data: { userId: user_id, content: text },
+            data: { userId: user_id.id, content: text },
             select: { id: true }
         });
 
@@ -105,7 +77,7 @@ app.get('interview/result/:id' , requireAuth() , async (req,res)=>{
             }
         })
 
-        res.sendStatus(200).json({response: data});
+        res.status(200).json({response: data});
     } catch (error) {
         res.sendStatus(400);
     }
@@ -125,10 +97,9 @@ app.get('interview/all' , requireAuth() , async (req,res)=>{
 
         if(!data) throw new Error("No data found");
 
-        res.sendStatus(200).json({data});
+        res.status(200).json({data});
     }catch(error){
-        res.sendStatus(400);
+        res.status(400).json({data:"No data found"});
     }
 })
 
-export default app;

@@ -1,13 +1,18 @@
 import { createServer } from "http";
-import { WebSocketServer, WebSocket } from "ws";
-import { def_script } from "../script";
-import httpApp from "./httpServer";
-import { verifyUser } from "../auth/helper";
-import PeerConnection from "../user_services/rtc";
-import { Connection } from "../user_services/connections";
+import { WebSocket, WebSocketServer } from "ws";
+import app from './app'
+import './routes'
+import { Connection } from "./user_services/connections";
 
-const server = createServer(httpApp);
-const wss = new WebSocketServer({ noServer: true });
+const server = createServer(app);
+const wss = new WebSocketServer({noServer:true});
+
+server.on('upgrade', (req, socket, head) => {
+  wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.emit('connection', ws, null);
+  });
+});
+
 
 wss.on('connection', (ws: WebSocket, user: any) => {
     console.log("Client Connected");
@@ -34,13 +39,10 @@ wss.on('connection', (ws: WebSocket, user: any) => {
 //     }
 // });
 
-server.on('upgrade', (req, socket, head) => {
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    wss.emit('connection', ws, null);
-  });
-});
-
 const PORT = 8080;
 server.listen(PORT, () => {
     console.log(`HTTP + WS server running on port ${PORT}`);
 });
+
+
+export default wss;

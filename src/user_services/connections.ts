@@ -52,7 +52,7 @@ export class Connection{
     private async storeResult(messages:any){
         try {
             const result = await this.entity.results(messages);
-            if(!this.userId || !this.role) throw new Error("No userId found.")
+            if(!this.userId || !this.role) throw new Error("No userId found/ or Empty role")
             const score = Number((result.reduce((score , sec) => score + sec.score , 0) / result.length).toFixed(1));
             const res = await db.interview.create({
                 data:{
@@ -71,6 +71,7 @@ export class Connection{
             })
             return {success: true , payload: res.id};
         } catch (error) {
+            console.log(`UserId : ${this.userId} , Role: ${this.role}`);
             return {success: false , payload:"Storing result failed"};
         }
     }

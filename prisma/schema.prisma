@@ -19,6 +19,7 @@ model User {
   id                      String        @id     @default(uuid())
   authid                  String        @unique
   authProvider            String
+  userName                String?
   firstName               String?
   lastName                String?
   email                   String?
