@@ -55,8 +55,12 @@ model InterviewResponse{
 }
 
 model Resume{
-  id                      String        @id     @default(uuid())
+  id                      String        @id     
   userId                  String
+  originalName            String?
+  url                     String
+  thumbnailUrl            String?
   content                 String
   user                    User                  @relation(fields: [userId] , references: [id])
+  uploadedAt              DateTime      @default(now())
 }

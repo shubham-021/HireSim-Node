@@ -13,7 +13,7 @@ importers:
         version: 1.7.35(express@5.1.0)(react@19.1.1)
       '@langchain/community':
         specifier: ^0.3.56
-        version: 0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(zod@4.1.9))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9)))(@langchain/google-genai@0.2.18(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9))))(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(jsonwebtoken@9.0.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(pdf-parse@1.1.1)(playwright@1.55.0)(weaviate-client@3.8.1)(ws@8.18.3)
+        version: 0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(zod@4.1.9))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9)))(@langchain/google-genai@0.2.18(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9))))(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(pdf-parse@1.1.1)(playwright@1.55.0)(weaviate-client@3.8.1)(ws@8.18.3)
       '@langchain/core':
         specifier: ^0.3.77
         version: 0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9))
@@ -41,6 +41,9 @@ importers:
       express:
         specifier: ^5.1.0
         version: 5.1.0
+      imagekit:
+        specifier: ^6.0.0
+        version: 6.0.0
       multer:
         specifier: ^2.0.2
         version: 2.0.2
@@ -59,6 +62,9 @@ importers:
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@24.5.2)(typescript@5.9.2)
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       ws:
         specifier: ^8.18.3
         version: 8.18.3
@@ -1189,6 +1195,9 @@ packages:
     resolution: {integrity: sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
 
+  hamming-distance@1.0.0:
+    resolution: {integrity: sha512-hYz2IIKtyuZGfOqCs7skNiFEATf+v9IUNSOaQSr6Ll4JOxxWhOvXvc3mIdCW82Z3xW+zUoto7N/ssD4bDxAWoA==}
+
   has-flag@4.0.0:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
@@ -1226,6 +1235,10 @@ packages:
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
+
+  imagekit@6.0.0:
+    resolution: {integrity: sha512-0MsxThZM2PYH6ngwN3zi9PDa8pCB5mEZG2FSySYiZk3Hfri8IMwUqVNzRlLQewBHQ3YtTN9M59O0Xe9HRewtOA==}
+    engines: {node: '>=12.0.0'}
 
   inherits@2.0.4:
     resolution: {integrity: sha512-k/vGaX4/Yla3WzyMCvTQOXYeIHvqOKtnqBduzTHpzpQZzAskKMhZ2K+EnBiSM9zGSoIFeMpXKxa4dYeZIQqewQ==}
@@ -1371,6 +1384,9 @@ packages:
 
   lodash.once@4.1.1:
     resolution: {integrity: sha512-Sb487aTOCr9drQVL8pIxOzVhafOjZN9UU54hiN8PU3uAiSV7lx1yYNpbNmex2PK6dSJoNTSJUUswT651yww3Mg==}
+
+  lodash@4.17.21:
+    resolution: {integrity: sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==}
 
   long@5.3.2:
     resolution: {integrity: sha512-mNAgZ1GmyNhD7AuqnTG3/VQ26o760+ZYBPKjPvugO8+nLbYfX6TVpJPseBvopbdY+qpZ/lKUnmEc1LeZYS3QAA==}
@@ -1828,6 +1844,14 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
+  uuid@13.0.0:
+    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
+    hasBin: true
+
+  uuid@8.3.2:
+    resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
+    hasBin: true
+
   uuid@9.0.1:
     resolution: {integrity: sha512-b+1eJOlsR9K8HJpow9Ok3fiWOWSIcIzXodvv0rQjVoOVNpWMpxf1wZNpt4y9h10odCNrqnYp1OBzRktckBe3sA==}
     hasBin: true
@@ -2035,7 +2059,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(zod@4.1.9))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9)))(@langchain/google-genai@0.2.18(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9))))(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(jsonwebtoken@9.0.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(pdf-parse@1.1.1)(playwright@1.55.0)(weaviate-client@3.8.1)(ws@8.18.3)':
+  '@langchain/community@0.3.56(@browserbasehq/sdk@2.6.0)(@browserbasehq/stagehand@1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(zod@4.1.9))(@ibm-cloud/watsonx-ai@1.6.13)(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9)))(@langchain/google-genai@0.2.18(@langchain/core@0.3.77(openai@6.1.0(ws@8.18.3)(zod@4.1.9))))(axios@1.12.2)(ibm-cloud-sdk-core@5.4.3)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(pdf-parse@1.1.1)(playwright@1.55.0)(weaviate-client@3.8.1)(ws@8.18.3)':
     dependencies:
       '@browserbasehq/stagehand': 1.14.0(@playwright/test@1.55.0)(deepmerge@4.3.1)(dotenv@17.2.2)(openai@6.1.0(ws@8.18.3)(zod@4.1.9))(zod@4.1.9)
       '@ibm-cloud/watsonx-ai': 1.6.13
@@ -2055,6 +2079,7 @@ snapshots:
     optionalDependencies:
       '@browserbasehq/sdk': 2.6.0
       jsonwebtoken: 9.0.2
+      lodash: 4.17.21
       pdf-parse: 1.1.1
       playwright: 1.55.0
       weaviate-client: 3.8.1
@@ -2735,6 +2760,8 @@ snapshots:
 
   graphql@16.11.0: {}
 
+  hamming-distance@1.0.0: {}
+
   has-flag@4.0.0: {}
 
   has-symbols@1.1.0: {}
@@ -2788,6 +2815,17 @@ snapshots:
       safer-buffer: 2.1.2
 
   ieee754@1.2.1: {}
+
+  imagekit@6.0.0:
+    dependencies:
+      axios: 1.12.2(debug@4.4.3)
+      form-data: 4.0.4
+      hamming-distance: 1.0.0
+      lodash: 4.17.21
+      tslib: 2.8.1
+      uuid: 8.3.2
+    transitivePeerDependencies:
+      - debug
 
   inherits@2.0.4: {}
 
@@ -2888,6 +2926,8 @@ snapshots:
   lodash.isstring@4.0.1: {}
 
   lodash.once@4.1.1: {}
+
+  lodash@4.17.21: {}
 
   long@5.3.2: {}
 
@@ -3328,6 +3368,10 @@ snapshots:
   uuid@10.0.0: {}
 
   uuid@11.1.0: {}
+
+  uuid@13.0.0: {}
+
+  uuid@8.3.2: {}
 
   uuid@9.0.1: {}
 
